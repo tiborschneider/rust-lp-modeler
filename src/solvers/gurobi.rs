@@ -15,6 +15,7 @@ pub struct GurobiSolver {
     name: String,
     command_name: String,
     temp_solution_file: String,
+    keep_problem_file: bool,
 }
 
 impl GurobiSolver {
@@ -23,6 +24,7 @@ impl GurobiSolver {
             name: "Gurobi".to_string(),
             command_name: "gurobi_cl".to_string(),
             temp_solution_file: format!("{}.sol", Uuid::new_v4().to_string()),
+            keep_problem_file: false,
         }
     }
     pub fn command_name(&self, command_name: String) -> GurobiSolver {
@@ -30,7 +32,11 @@ impl GurobiSolver {
             name: self.name.clone(),
             command_name,
             temp_solution_file: self.temp_solution_file.clone(),
+            keep_problem_file: false,
         }
+    }
+    pub fn keep_problem_file(&mut self) {
+        self.keep_problem_file = true;
     }
 }
 
@@ -117,7 +123,9 @@ impl SolverTrait for GurobiSolver {
                     }
                     Err(_) => Err(format!("Error running the {} solver", self.name)),
                 };
-                let _ = fs::remove_file(&file_model);
+                if !self.keep_problem_file {
+                    let _ = fs::remove_file(&file_model);
+                }
 
                 result
             }
