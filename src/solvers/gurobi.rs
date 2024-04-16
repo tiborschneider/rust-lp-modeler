@@ -96,7 +96,7 @@ impl SolverTrait for GurobiSolver {
                             let result = String::from_utf8(r.stdout).expect("");
                             if result.contains("Optimal solution found") {
                                 status = Status::Optimal;
-                            } else if result.contains("infesible") {
+                            } else if result.contains("infeasible") {
                                 status = Status::Infeasible;
                             }
                             self.read_solution(&self.temp_solution_file, Some(problem)).map(
