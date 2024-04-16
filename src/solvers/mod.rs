@@ -62,18 +62,18 @@ pub enum Status {
 #[derive(Debug, Clone)]
 pub struct Solution<'a> {
     pub status: Status,
-    pub results: HashMap<String, f32>,
+    pub results: HashMap<String, f64>,
     pub related_problem: Option<&'a LpProblem>
 }
 impl Solution<'_> {
-    pub fn new<'a>(status: Status, results: HashMap<String, f32>) -> Solution<'a> {
+    pub fn new<'a>(status: Status, results: HashMap<String, f64>) -> Solution<'a> {
         Solution {
             status,
             results,
             related_problem: None
         }
     }
-    pub fn with_problem(status: Status, results: HashMap<String, f32>, problem: &LpProblem) -> Solution {
+    pub fn with_problem(status: Status, results: HashMap<String, f64>, problem: &LpProblem) -> Solution {
         Solution {
             status,
             results,
@@ -86,7 +86,7 @@ impl Solution<'_> {
             _ => ()
         }
     }
-    pub fn get_raw_value(&self, name: &str) -> f32 {
+    pub fn get_raw_value(&self, name: &str) -> f64 {
         self.check_possible_solution();
         *self.results.get(name).expect("No value found for this variable. Check if the variable has been used in the related problem.")
     }
@@ -94,7 +94,7 @@ impl Solution<'_> {
         self.check_possible_solution();
         self.results.get(&var.name).and_then(|&f| if is_zero(1.0-f) { Some(true) } else if is_zero(f) { Some(false) } else { None } ).expect("Result value cannot be interpreted as boolean")
     }
-    pub fn get_float(&self, var: &LpContinuous) -> f32 {
+    pub fn get_float(&self, var: &LpContinuous) -> f64 {
         self.check_possible_solution();
         *self.results.get(&var.name).expect("No value found for this variable. Check if the variable has been used in the related problem.")
     }
@@ -102,10 +102,10 @@ impl Solution<'_> {
         self.check_possible_solution();
         let &f = self.results.get(&var.name).expect("No value found for this variable. Check if the variable has been used in the related problem.");
         let i = f as i32;
-        assert!( is_zero( f-(i as f32)), format!("Value {} cannot be interpreted as integer.", f) );
+        assert!( is_zero( f-(i as f64)), format!("Value {} cannot be interpreted as integer.", f) );
         i
     }
-    pub fn eval(&self) -> Option<f32> {
+    pub fn eval(&self) -> Option<f64> {
         self.related_problem
             .and_then( |problem| {
                 match &problem.obj_expr_arena {
@@ -114,7 +114,7 @@ impl Solution<'_> {
                 }
             })
     }
-    fn eval_with(&self, index: &LpExprArenaIndex, values: &HashMap<String, f32>) -> f32 {
+    fn eval_with(&self, index: &LpExprArenaIndex, values: &HashMap<String, f64>) -> f64 {
         match self.related_problem.unwrap().obj_expr_arena.as_ref().unwrap().expr_ref_at(*index) {
             LpExprNode::LpCompExpr(operation, left, right) => {
                 match operation {
@@ -125,7 +125,7 @@ impl Solution<'_> {
             },
             LpExprNode::ConsBin(LpBinary { name })
             | LpExprNode::ConsCont(LpContinuous { name, .. })
-            | LpExprNode::ConsInt(LpInteger { name, .. }) => *values.get(name).unwrap_or(&0f32),
+            | LpExprNode::ConsInt(LpInteger { name, .. }) => *values.get(name).unwrap_or(&0f64),
             LpExprNode::LitVal(n) => *n,
             LpExprNode::EmptyExpr => 0.0
         }

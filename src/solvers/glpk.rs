@@ -92,7 +92,7 @@ impl SolverWithSolutionParsing for GlpkSolver {
             };
             let result_line: Vec<_> = line.split_whitespace().collect();
             if result_line.len() >= 4 {
-                match result_line[3].parse::<f32>() {
+                match result_line[3].parse::<f64>() {
                     Ok(n) => {
                         vars_value.insert(result_line[1].to_string(), n);
                     }

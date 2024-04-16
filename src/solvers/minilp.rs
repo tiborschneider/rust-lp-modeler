@@ -43,14 +43,14 @@ fn comparison_to_minilp(op: Constraint) -> minilp::ComparisonOp {
 
 #[derive(Debug, PartialEq)]
 struct VarWithCoeff {
-    coefficient: f32,
-    min: f32,
-    max: f32,
+    coefficient: f64,
+    min: f64,
+    max: f64,
 }
 
 impl Default for VarWithCoeff {
     fn default() -> Self {
-        VarWithCoeff { coefficient: 0., min: f32::NEG_INFINITY, max: f32::INFINITY }
+        VarWithCoeff { coefficient: 0., min: f64::NEG_INFINITY, max: f64::INFINITY }
     }
 }
 
@@ -58,7 +58,7 @@ impl Default for VarWithCoeff {
 struct VarList(HashMap<String, VarWithCoeff>);
 
 impl VarList {
-    fn add(&mut self, var: LpContinuous, coefficient: f32) {
+    fn add(&mut self, var: LpContinuous, coefficient: f64) {
         let LpContinuous { name, lower_bound, upper_bound } = var;
         let prev = self.0.entry(name).or_default();
         prev.coefficient += coefficient;
@@ -160,10 +160,10 @@ fn solution_from_minilp(
 ) -> Result<Solution<'static>, String> {
     match result {
         Ok(solution) => {
-            let results: Option<HashMap<String, f32>> = solution.iter()
+            let results: Option<HashMap<String, f64>> = solution.iter()
                 .map(|(var, &value)| {
                     std::mem::take(&mut variable_names[var.idx()]).map(|name| {
-                        (name, value as f32)
+                        (name, value as f64)
                     })
                 })
                 .collect();
@@ -206,7 +206,7 @@ fn test_solve() {
     problem += (500 * a - 1000 * b).ge(10000);
     problem += (a).le(b);
 
-    let expected: HashMap<String, f32> = vec![
+    let expected: HashMap<String, f64> = vec![
         ("a".into(), -20.),
         ("b".into(), -20.)
     ].into_iter().collect();

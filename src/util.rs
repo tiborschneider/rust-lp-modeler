@@ -1,4 +1,4 @@
-pub fn is_zero(n: f32) -> bool {
+pub fn is_zero(n: f64) -> bool {
     n.abs() < 0.00001
 }
 

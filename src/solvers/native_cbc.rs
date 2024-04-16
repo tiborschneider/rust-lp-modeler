@@ -55,7 +55,7 @@ impl LpExpression {
     /// and `LitVal()`s of all Addition / Subtraction expressions are already accumulated towards the
     /// right end of the tree, with all Addition / SUbtraction expressions on the most global level
     /// possible.
-    fn var_lit(&self, expr_index: LpExprArenaIndex, lst: &mut Vec<(String, f32)>, mul: f32) {
+    fn var_lit(&self, expr_index: LpExprArenaIndex, lst: &mut Vec<(String, f64)>, mul: f64) {
         match self.expr_ref_at(expr_index) {
             &ConsBin(LpBinary { ref name, .. })
             | &ConsInt(LpInteger { ref name, .. })
@@ -189,7 +189,7 @@ impl SolverTrait for NativeCbcSolver {
             },
             results: cols
                 .iter()
-                .map(|(name, col)| (name.to_owned(), sol.col(*col) as f32))
+                .map(|(name, col)| (name.to_owned(), sol.col(*col) as f64))
                 .collect(),
             related_problem: Some(problem),
         })

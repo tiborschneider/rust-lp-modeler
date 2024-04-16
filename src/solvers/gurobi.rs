@@ -56,7 +56,7 @@ impl SolverWithSolutionParsing for GurobiSolver {
 
                 let result_line: Vec<_> = l.split_whitespace().collect();
                 if result_line.len() == 2 {
-                    match result_line[1].parse::<f32>() {
+                    match result_line[1].parse::<f64>() {
                         Ok(n) => {
                             vars_value.insert(result_line[0].to_string(), n);
                         }

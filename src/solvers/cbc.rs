@@ -89,7 +89,7 @@ impl SolverWithSolutionParsing for CbcSolver {
                 result_line.remove(0);
             };
             if result_line.len() == 4 {
-                match result_line[2].parse::<f32>() {
+                match result_line[2].parse::<f64>() {
                     Ok(n) => {
                         vars_value.insert(result_line[1].to_string(), n);
                     }

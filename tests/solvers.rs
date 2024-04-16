@@ -9,9 +9,9 @@ fn cbc_optimal() {
     let solver = CbcSolver::new().with_temp_solution_file("cbc_optimal.sol".to_string());
     let Solution { status, results: mut variables, related_problem: _ } = solver.read_solution(&"cbc_optimal.sol".to_string(), None).unwrap();
     assert_eq!(status, Status::Optimal);
-    assert_eq!(variables.remove("a"), Some(5f32));
-    assert_eq!(variables.remove("b"), Some(6f32));
-    assert_eq!(variables.remove("c"), Some(0f32));
+    assert_eq!(variables.remove("a"), Some(5f64));
+    assert_eq!(variables.remove("b"), Some(6f64));
+    assert_eq!(variables.remove("c"), Some(0f64));
 }
 
 #[test]
@@ -45,8 +45,8 @@ fn cbc_infeasible_alternative_format() {
         .read_solution(&"cbc_infeasible_alternative_format.sol".to_string(), None)
         .unwrap();
     assert_eq!(status, Status::Infeasible);
-    assert_eq!(variables.remove("a"), Some(2f32));
-    assert_eq!(variables.remove("b"), Some(0f32));
+    assert_eq!(variables.remove("a"), Some(2f64));
+    assert_eq!(variables.remove("b"), Some(0f64));
 }
 
 #[test]
@@ -66,9 +66,9 @@ fn glpk_optimal() {
     let solver = GlpkSolver::new().with_temp_solution_file("glpk_optimal.sol".to_string());
     let Solution { status, results: mut variables, related_problem: _ } = solver.read_solution(&"glpk_optimal.sol".to_string(), None).unwrap();
     assert_eq!(status, Status::Optimal);
-    assert_eq!(variables.remove("a"), Some(0f32));
-    assert_eq!(variables.remove("b"), Some(5f32));
-    assert_eq!(variables.remove("c"), Some(0f32));
+    assert_eq!(variables.remove("a"), Some(0f64));
+    assert_eq!(variables.remove("b"), Some(5f64));
+    assert_eq!(variables.remove("c"), Some(0f64));
 }
 
 #[test]

@@ -85,7 +85,7 @@ fn test_readme_example_2() {
     // Problem Data
     let men = vec!["A", "B", "C"];
     let women = vec!["D", "E", "F"];
-    let compat_scores : HashMap<(&str,&str),f32> = vec![
+    let compat_scores : HashMap<(&str,&str),f64> = vec![
         (("A", "D"), 50.0),
         (("A", "E"), 75.0),
         (("A", "F"), 75.0),
@@ -155,7 +155,7 @@ fn test_readme_example_2() {
     let Solution { status: solver_status, results: var_values, related_problem: _ } = result.unwrap();
 
     // Compute final objective function value
-    let mut obj_value = 0f32;
+    let mut obj_value = 0f64;
     for (&(&m, &w), var) in &vars {
         let obj_coef = compat_scores.get(&(m, w)).unwrap();
         let var_value = var_values.get(&var.name).unwrap();
@@ -175,10 +175,10 @@ fn test_readme_example_2() {
     }
 
     assert_eq!(solver_status, lp_modeler::solvers::Status::Optimal);
-    assert_eq!(obj_value, 230f32);
-    assert_eq!(*var_values.get("A_F").unwrap(), 1f32);
-    assert_eq!(*var_values.get("B_E").unwrap(), 1f32);
-    assert_eq!(*var_values.get("C_D").unwrap(), 1f32);
+    assert_eq!(obj_value, 230f64);
+    assert_eq!(*var_values.get("A_F").unwrap(), 1f64);
+    assert_eq!(*var_values.get("B_E").unwrap(), 1f64);
+    assert_eq!(*var_values.get("C_D").unwrap(), 1f64);
 }
 
 #[cfg(feature = "native_coin_cbc")]
@@ -189,7 +189,7 @@ fn test_readme_example_2() {
 // s.t.      2a - 8b + 4c + 2d + 5e <= 10
 fn cbc_native_optimal() {
     let mut problem = LpProblem::new("Knapsack", LpObjective::Maximize);
-    let objective: HashMap<&str, f32> =
+    let objective: HashMap<&str, f64> =
         vec![("a", 5.0), ("b", 3.0), ("c", 2.0), ("d", 7.0), ("e", 4.0)]
             .into_iter()
             .collect();
@@ -208,7 +208,7 @@ fn cbc_native_optimal() {
             println!("Status {:?}", sol.status);
             println!("{:?}", sol.results);
             assert_eq!(
-                17f32,
+                17f64,
                 x.iter()
                     .map(|(name, var)| match sol.results.get(&var.name) {
                         Some(s) => {

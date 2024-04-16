@@ -102,14 +102,14 @@ macro_rules! numeric_operation_for_expr {
         impl $trait_name<LpExpression> for $num_type {
             type Output = LpExpression;
             fn $f_name(self, lp_expr_arena: LpExpression) -> LpExpression {
-                let new_lp_expr_arena: LpExpression = (self as f32).into();
+                let new_lp_expr_arena: LpExpression = (self as f64).into();
                 new_lp_expr_arena.merge_cloned_arenas(&lp_expr_arena.clone(), $type_expr)
             }
         }
         impl<'a> $trait_name<&'a LpExpression> for $num_type {
             type Output = LpExpression;
             fn $f_name(self, lp_expr_arena: &'a LpExpression) -> LpExpression {
-                let new_lp_expr_arena: LpExpression = (self as f32).into();
+                let new_lp_expr_arena: LpExpression = (self as f64).into();
                 new_lp_expr_arena.merge_cloned_arenas(lp_expr_arena, $type_expr)
             }
         }
@@ -123,7 +123,7 @@ macro_rules! numeric_all_ops_for_expr {
         numeric_operation_for_expr!($num_type, Sub, sub, Subtraction);
     };
 }
-numeric_all_ops_for_expr!(f32);
+numeric_all_ops_for_expr!(f64);
 numeric_all_ops_for_expr!(i32);
 
 /// &LpExpression to LpExpression
@@ -190,7 +190,7 @@ macro_rules! numeric_operation_for_lpvars {
         impl $trait_name<$lp_type_right> for $num_type_left {
             type Output = LpExpression;
             fn $f_name(self, var: $lp_type_right) -> LpExpression {
-                let new_lp_expr_arena: LpExpression = (self as f32).clone().into();
+                let new_lp_expr_arena: LpExpression = (self as f64).clone().into();
                 let new_right: LpExpression = var.clone().into();
                 new_lp_expr_arena.merge_cloned_arenas(&new_right, $type_expr)
             }
@@ -198,7 +198,7 @@ macro_rules! numeric_operation_for_lpvars {
         impl<'a> $trait_name<&'a $lp_type_right> for $num_type_left {
             type Output = LpExpression;
             fn $f_name(self, var: &'a $lp_type_right) -> LpExpression {
-                let new_lp_expr_arena: LpExpression = (self as f32).into();
+                let new_lp_expr_arena: LpExpression = (self as f64).into();
                 let new_right: LpExpression = (*var).clone().into();
                 new_lp_expr_arena.merge_cloned_arenas(&new_right, $type_expr)
             }
@@ -221,4 +221,4 @@ macro_rules! numeric_all_ops_for_lpvars {
     };
 }
 numeric_all_ops_for_lpvars!(i32);
-numeric_all_ops_for_lpvars!(f32);
+numeric_all_ops_for_lpvars!(f64);

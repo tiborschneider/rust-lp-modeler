@@ -11,8 +11,8 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 pub trait BoundableLp: PartialEq + Clone {
-    fn lower_bound(&self, lw: f32) -> Self;
-    fn upper_bound(&self, up: f32) -> Self;
+    fn lower_bound(&self, lw: f64) -> Self;
+    fn upper_bound(&self, up: f64) -> Self;
 }
 
 // A binary variable is constrained to be either 1 or 0. Refer to the
@@ -44,8 +44,8 @@ impl ToTokens for LpBinary {
 #[derive(Debug, Clone, PartialEq)]
 pub struct LpInteger {
     pub(crate) name: String,
-    pub(crate) lower_bound: Option<f32>,
-    pub(crate) upper_bound: Option<f32>,
+    pub(crate) lower_bound: Option<f64>,
+    pub(crate) upper_bound: Option<f64>,
 }
 impl LpInteger {
     pub fn new(name: &str) -> LpInteger {
@@ -80,8 +80,8 @@ impl ToTokens for LpInteger {
 #[derive(Debug, Clone, PartialEq)]
 pub struct LpContinuous {
     pub name: String,
-    pub lower_bound: Option<f32>,
-    pub upper_bound: Option<f32>,
+    pub lower_bound: Option<f64>,
+    pub upper_bound: Option<f64>,
 }
 impl LpContinuous {
     pub fn new(name: &str) -> LpContinuous {
@@ -116,14 +116,14 @@ impl ToTokens for LpContinuous {
 macro_rules! implement_boundable {
     ($lp_type: ident) => {
         impl BoundableLp for $lp_type {
-            fn lower_bound(&self, lw: f32) -> $lp_type {
+            fn lower_bound(&self, lw: f64) -> $lp_type {
                 $lp_type {
                     name: self.name.clone(),
                     lower_bound: Some(lw),
                     upper_bound: self.upper_bound,
                 }
             }
-            fn upper_bound(&self, up: f32) -> $lp_type {
+            fn upper_bound(&self, up: f64) -> $lp_type {
                 $lp_type {
                     name: self.name.clone(),
                     lower_bound: self.lower_bound,
@@ -170,7 +170,7 @@ pub(crate) enum LpExprNode {
     ConsInt(LpInteger),
     ConsBin(LpBinary),
     ConsCont(LpContinuous),
-    LitVal(f32),
+    LitVal(f64),
     EmptyExpr,
     LpCompExpr(LpExprOp, LpExprArenaIndex, LpExprArenaIndex)
 }
@@ -213,17 +213,17 @@ macro_rules! lit_into_expr {
     ($type_from:ty) => {
         impl From<$type_from> for LpExprNode {
             fn from(from: $type_from) -> Self {
-                    LitVal(from as f32)
+                    LitVal(from as f64)
             }
         }
         impl<'a> From<&'a $type_from> for LpExprNode {
             fn from(from: &'a $type_from) -> Self {
-                    LitVal((*from).clone() as f32)
+                    LitVal((*from).clone() as f64)
             }
         }
     };
 }
-lit_into_expr!(f32);
+lit_into_expr!(f64);
 lit_into_expr!(i32);
 
 #[derive(Debug, Clone, PartialEq)]
@@ -276,7 +276,7 @@ macro_rules! lit_into_expr_arena {
             fn from(from: $type_from) -> Self {
                 LpExpression {
                     root: 0,
-                    arena: vec![LitVal(from as f32); 1]
+                    arena: vec![LitVal(from as f64); 1]
                 }
             }
         }
@@ -284,13 +284,13 @@ macro_rules! lit_into_expr_arena {
             fn from(from: &'a $type_from) -> Self {
                 LpExpression {
                     root: 0,
-                    arena: vec![LitVal((*from).clone() as f32); 1]
+                    arena: vec![LitVal((*from).clone() as f64); 1]
                 }
             }
         }
     };
 }
-lit_into_expr_arena!(f32);
+lit_into_expr_arena!(f64);
 lit_into_expr_arena!(i32);
 
 impl From<LpExprNode> for LpExpression {
@@ -319,7 +319,7 @@ impl LpExpression {
        }
     }
 
-    pub fn literal(value: f32) -> Self {
+    pub fn literal(value: f64) -> Self {
         value.into()
     }
 
@@ -373,7 +373,7 @@ impl LpExpression {
         self.expr_ref_at(self.root)
     }
 
-    pub(crate) fn split_off_constant(&mut self) -> f32 {
+    pub(crate) fn split_off_constant(&mut self) -> f64 {
         match self.expr_clone_at(self.root) {
             LitVal(c) => {
                 self.clone_from(&LpExpression::new());
@@ -1416,14 +1416,14 @@ mod tests {
     fn simplifications() {
         let a = &LpInteger::new("a");
 
-        let expr1 = a - 2f32;
-        let expr2 = 1f32 - a;
+        let expr1 = a - 2f64;
+        let expr2 = 1f64 - a;
 
         let c = (expr1.clone() + expr2.clone()).simplify().split_off_constant();
-        assert_eq!(c, -1f32);
+        assert_eq!(c, -1f64);
 
         let c = (expr2.clone() + expr1.clone()).simplify().split_off_constant();
-        assert_eq!(c, -1f32);
+        assert_eq!(c, -1f64);
     }
 
     #[test]
@@ -1435,7 +1435,7 @@ mod tests {
             )
             .collect();
         let mut sum = lp_sum(&vars);
-        assert_eq!(sum.simplify().split_off_constant(), count as f32);
+        assert_eq!(sum.simplify().split_off_constant(), count as f64);
     }
 
     #[test]
@@ -1450,18 +1450,18 @@ mod tests {
         let quoted_exp_str = "LpExprNode :: ConsInt (".to_owned() + quoted_a_str + ")";
         assert_eq!(quoted_exp.to_string(), quoted_exp_str);
 
-        let full_exp_arena = LpExpression::build (0, vec![LpExprNode:: LpCompExpr (LpExprOp :: Multiplication, 1, 2), LpExprNode:: LpCompExpr (LpExprOp :: Subtraction, 3, 4 ), LpExprNode:: LpCompExpr (LpExprOp :: Addition, 5, 6), LpExprNode:: LitVal (1f32), LpExprNode:: EmptyExpr, LpExprNode:: ConsCont (LpContinuous { name : "x".to_string() , lower_bound : None , upper_bound : None }), LpExprNode:: ConsInt (LpInteger { name : "y".to_string() , lower_bound : None , upper_bound : None }) ] );
+        let full_exp_arena = LpExpression::build (0, vec![LpExprNode:: LpCompExpr (LpExprOp :: Multiplication, 1, 2), LpExprNode:: LpCompExpr (LpExprOp :: Subtraction, 3, 4 ), LpExprNode:: LpCompExpr (LpExprOp :: Addition, 5, 6), LpExprNode:: LitVal (1f64), LpExprNode:: EmptyExpr, LpExprNode:: ConsCont (LpContinuous { name : "x".to_string() , lower_bound : None , upper_bound : None }), LpExprNode:: ConsInt (LpInteger { name : "y".to_string() , lower_bound : None , upper_bound : None }) ] );
 
 
         let full_exp_quoted = quote!(#full_exp_arena);
-        let full_exp_str = "LpExpression { root : 0usize , arena : struct LpExprNode :: LpCompExpr (LpExprOp :: Multiplication , 1usize , 2usize) ; , struct LpExprNode :: LpCompExpr (LpExprOp :: Subtraction , 3usize , 4usize) ; , struct LpExprNode :: LpCompExpr (LpExprOp :: Addition , 5usize , 6usize) ; , struct LpExprNode :: LitVal (1f32) ; , struct LpExprNode :: EmptyExpr ; , struct LpExprNode :: ConsCont (LpContinuous { name : \"x\" . to_string () , lower_bound : None , upper_bound : None }) ; , struct LpExprNode :: ConsInt (LpInteger { name : \"y\" . to_string () , lower_bound : None , upper_bound : None }) ; }";
+        let full_exp_str = "LpExpression { root : 0usize , arena : struct LpExprNode :: LpCompExpr (LpExprOp :: Multiplication , 1usize , 2usize) ; , struct LpExprNode :: LpCompExpr (LpExprOp :: Subtraction , 3usize , 4usize) ; , struct LpExprNode :: LpCompExpr (LpExprOp :: Addition , 5usize , 6usize) ; , struct LpExprNode :: LitVal (1f64) ; , struct LpExprNode :: EmptyExpr ; , struct LpExprNode :: ConsCont (LpContinuous { name : \"x\" . to_string () , lower_bound : None , upper_bound : None }) ; , struct LpExprNode :: ConsInt (LpInteger { name : \"y\" . to_string () , lower_bound : None , upper_bound : None }) ; }";
         assert_eq!(full_exp_quoted.to_string(), full_exp_str);
 
         // a.equal(&b);
-        let a_eq_b = LpConstraint(LpExpression::build(0, vec![LpExprNode:: LpCompExpr(LpExprOp :: Subtraction, 1, 2), LpExprNode::ConsInt (LpInteger { name : "a".to_string() , lower_bound : None , upper_bound : None }), LpExprNode::ConsInt (LpInteger { name : "b".to_string() , lower_bound : None , upper_bound : None }) ] ), Constraint::Equal, LitVal(0f32).into());
+        let a_eq_b = LpConstraint(LpExpression::build(0, vec![LpExprNode:: LpCompExpr(LpExprOp :: Subtraction, 1, 2), LpExprNode::ConsInt (LpInteger { name : "a".to_string() , lower_bound : None , upper_bound : None }), LpExprNode::ConsInt (LpInteger { name : "b".to_string() , lower_bound : None , upper_bound : None }) ] ), Constraint::Equal, LitVal(0f64).into());
 
         let quoted_a_eq_b = quote!(#a_eq_b);
-        let a_eq_b_str = "LpConstraint (LpExpression { root : 0usize , arena : struct LpExprNode :: LpCompExpr (LpExprOp :: Subtraction , 1usize , 2usize) ; , struct LpExprNode :: ConsInt (LpInteger { name : \"a\" . to_string () , lower_bound : None , upper_bound : None }) ; , struct LpExprNode :: ConsInt (LpInteger { name : \"b\" . to_string () , lower_bound : None , upper_bound : None }) ; } , Constraint :: Equal , LpExpression { root : 0usize , arena : struct LpExprNode :: LitVal (0f32) ; })";
+        let a_eq_b_str = "LpConstraint (LpExpression { root : 0usize , arena : struct LpExprNode :: LpCompExpr (LpExprOp :: Subtraction , 1usize , 2usize) ; , struct LpExprNode :: ConsInt (LpInteger { name : \"a\" . to_string () , lower_bound : None , upper_bound : None }) ; , struct LpExprNode :: ConsInt (LpInteger { name : \"b\" . to_string () , lower_bound : None , upper_bound : None }) ; } , Constraint :: Equal , LpExpression { root : 0usize , arena : struct LpExprNode :: LitVal (0f64) ; })";
         assert_eq!(quoted_a_eq_b.to_string(), a_eq_b_str);
     }
 }

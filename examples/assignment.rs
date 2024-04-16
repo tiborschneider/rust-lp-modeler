@@ -9,7 +9,7 @@ fn main() {
     // Problem Data
     let men = vec!["A", "B", "C"];
     let women = vec!["D", "E", "F"];
-    let compatibility_score: HashMap<(&str, &str),f32> = vec![
+    let compatibility_score: HashMap<(&str, &str),f64> = vec![
         (("A", "D"), 50.0),
         (("A", "E"), 75.0),
         (("A", "F"), 75.0),
@@ -63,7 +63,7 @@ fn main() {
     // (terminate if error, or assign status & variable values)
     assert!(result.is_ok(), result.unwrap_err());
     let solution = result.unwrap();
-    let mut obj_value = 0f32;
+    let mut obj_value = 0f64;
     for (&(m, w), var) in &vars{
         let obj_coef = compatibility_score.get(&(m, w)).unwrap();
         let var_value = solution.results.get(&var.name).unwrap();
